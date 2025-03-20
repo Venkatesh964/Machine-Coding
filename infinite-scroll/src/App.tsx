@@ -1,35 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
 
+const LIMIT = 20;
+
+type productType = {
+  id: number;
+  title: string;
+  price: number;
+};
 function App() {
-  const [count, setCount] = useState(0)
+  // const page = 1;
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState<productType[]>([]);
 
+  const [loading, setLoading] = useState(true);
+  //const [count, setCount] = useState(50);
+
+  async function getData() {
+    setLoading(true);
+    const response = await fetch(
+      `https://dummyjson.com/products?limit=20&skip=${
+        (page - 1) * LIMIT
+      }&select=title,price`
+    );
+    const data = await response.json();
+    setLoading(false);
+    setData((prevData) => [...prevData, ...data.products]);
+  }
+
+  useEffect(() => {
+    getData();
+  }, [page]);
+
+  useEffect(() => {
+    const onscroll = () => {
+      //everything here is stored in pixels
+      //innerheight gives the height of current window in pixels
+      //scrollY gives the height scrolled in pixels
+      //with offsetHeight we are taking the height of the body.
+      // getBoundingClientRect()
+      if (
+        window.innerHeight + window.scrollY >=
+        window.document.body.getBoundingClientRect().height - 100
+      ) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener("scroll", onscroll);
+
+    return () => window.removeEventListener("scroll", onscroll);
+  }, []);
+
+  console.log(data);
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      {data.map((product: productType) => (
+        <Card key={product.id} title={product.title} price={product.price} />
+      ))}
+    </div>
+  );
 }
 
-export default App
+function Card({ title, price }: { title: any; price: any }) {
+  return (
+    <div>
+      <div>{title}</div>
+      <div>{price}</div>
+    </div>
+  );
+}
+export default App;
