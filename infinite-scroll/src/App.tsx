@@ -12,7 +12,7 @@ function App() {
   const [page, setPage] = useState(1);
   const [data, setData] = useState<productType[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   //const [count, setCount] = useState(50);
 
   async function getData() {
